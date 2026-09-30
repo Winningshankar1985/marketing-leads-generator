@@ -1,0 +1,5 @@
+python-dotenv
+langchain
+langchain-deepseek
+langchain-google-community[places]
+deepagents
