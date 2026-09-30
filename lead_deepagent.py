@@ -1,5 +1,6 @@
 import os
 import json
+import time
 from pathlib import Path
 from dotenv import load_dotenv, find_dotenv
 from langchain_deepseek import ChatDeepSeek
@@ -33,13 +34,19 @@ _agent=create_deep_agent(
     system_prompt=sys_prompt
 )
 
-try:
-    print(f"Agent has started looking for leads:\n")
-    output=_agent.invoke(messages)
-   
- 
-    print(f"Done\n")
-      
-except Exception as e:
-
-    print(f"The agent failed to execute,\n\n Message:\n {str(e)}")
+max_retries=3
+for attempt in range(1, max_retries + 1):
+    try:
+        print(f"Agent has started looking for leads:\n")
+        output=_agent.invoke(messages)
+        print(f"Done\n")
+        break
+    except Exception as e:
+        error_msg=str(e)
+        if ("Connection" in error_msg or "reset" in error_msg.lower()) and attempt < max_retries:
+            wait = 10 * attempt
+            print(f"\nConnection error on attempt {attempt}/{max_retries}. Retrying in {wait}s...\n")
+            time.sleep(wait)
+        else:
+            print(f"The agent failed to execute,\n\n Message:\n {error_msg}")
+            break
